@@ -1,0 +1,72 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+    <TableSelectDialog
+        id="dialogBatchVH"
+        title="Select Batch"
+        multiSelect="true"
+        items="{/ZI_GET_BATCH_FG}"
+        search=".onBatchVHSearch"
+        confirm=".onBatchVHConfirm"
+        cancel=".onBatchVHCancel"
+        growing="true"
+        growingThreshold="20"
+    >
+        <columns>
+            <Column id="colBatchHdr">
+                <Text id="txtColBatch" text="Batch" />
+            </Column>
+            <Column id="colMaterialHdr">
+                <Text id="txtColMaterial" text="Material" />
+            </Column>
+            <Column id="colProductDescHdr">
+                <Text id="txtColProductDesc" text="Description" />
+            </Column>
+            <Column id="colColorHdr">
+                <Text id="txtColColor" text="Color" />
+            </Column>
+            <Column id="colSizeSetHdr">
+                <Text id="txtColSizeSet" text="Size Set" />
+            </Column>
+            <Column id="colLotNumHdr">
+                <Text id="txtColLotNum" text="Lot Number" />
+            </Column>
+            <Column id="colPlantHdr">
+                <Text id="txtColPlant" text="Plant" />
+            </Column>
+            <Column id="colSlocHdr">
+                <Text id="txtColSloc" text="SLoc" />
+            </Column>
+            <Column id="colSDDocHdr">
+                <Text id="txtColSDDoc" text="Sales Order" />
+            </Column>
+            <Column id="colSDDocItemHdr">
+                <Text id="txtColSDDocItem" text="SO Item" />
+            </Column>
+            <Column id="colQtyHdr" hAlign="End">
+                <Text id="txtColQty" text="Quantity" />
+            </Column>
+            <Column id="colUomHdr">
+                <Text id="txtColUom" text="UoM" />
+            </Column>
+        </columns>
+
+        <ColumnListItem id="cliBatchItem">
+            <cells>
+                <Text id="txtBatch" text="{Batch}" />
+                <Text id="txtMaterial" text="{Material}" />
+                <Text id="txtProductDescription" text="{ProductDescription}" />
+                <Text id="txtColor" text="{Color}" />
+                <Text id="txtSizeSet" text="{SizeSet}" />
+                <Text id="txtLotNum" text="{LotNum}" />
+                <Text id="txtPlant" text="{Plant}" />
+                <Text id="txtStorageLocation" text="{StorageLocation}" />
+                <Text id="txtSDDocument" text="{SDDocument}" />
+                <Text id="txtSDDocumentItem" text="{SDDocumentItem}" />
+                <Text id="txtQty" text="{QTY}" />
+                <Text id="txtUom" text="{MaterialBaseUnit}" />
+            </cells>
+        </ColumnListItem>
+    </TableSelectDialog>
+</core:FragmentDefinition>

@@ -1,0 +1,51 @@
+<core:FragmentDefinition 
+    xmlns="sap.m" 
+    xmlns:core="sap.ui.core">
+    <TableSelectDialog id="_IDGenTableSelectDialog"
+        title="Select Style"
+        items="{/ZI_FG_STYLE}"
+        search=".onStyleVHSearch"
+        confirm=".onStyleVHConfirm"
+        cancel=".onStyleVHCancel"
+        contentWidth="700px"
+        contentHeight="500px"
+        rememberSelections="true">
+        
+        <columns>
+            <Column id="_IDGenColumn" width="8rem">
+                <header><Text id="_IDGenText39" text="Style" /></header>
+            </Column>
+            <Column id="_IDGenColumn9" width="8rem">
+                <header><Text id="_IDGenText51" text="Plant" /></header>
+            </Column>
+            <Column id="_IDGenColumn1" width="12rem">
+                <header><Text id="_IDGenText40" text="Style Description" /></header>
+            </Column>
+            <Column id="_IDGenColumn2" width="8rem">
+                <header><Text id="_IDGenText41" text="Brand" /></header>
+            </Column>
+            <Column id="_IDGenColumn3" width="8rem">
+                <header><Text id="_IDGenText42" text="Category" /></header>
+            </Column>
+            <Column id="_IDGenColumn4" width="6rem">
+                <header><Text id="_IDGenText43" text="Season" /></header>
+            </Column>
+            <Column id="_IDGenColumn5" width="8rem">
+                <header><Text id="_IDGenText44" text="Sub Category" /></header>
+            </Column>
+        </columns>
+
+        <ColumnListItem id="_IDGenColumnListItem1">
+            <cells>
+                <Text id="_IDGenText45" text="{StyleName}" />
+                <Text id="_IDGenText52" text="{Plant}" />
+                <Text id="_IDGenText46" text="{StyleDesc}" />
+                <Text id="_IDGenText47" text="{BrandName}" />
+                <Text id="_IDGenText48" text="{ProductType}" />
+                <Text id="_IDGenText49" text="{Season}" />
+                <Text id="_IDGenText50" text="{subcat}" />
+            </cells>
+        </ColumnListItem>
+
+    </TableSelectDialog>
+</core:FragmentDefinition>
