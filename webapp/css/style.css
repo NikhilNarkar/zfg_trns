@@ -1,1 +1,50 @@
-/* Enter your custom styles here */
+/* Tighten SimpleForm Grid spacing & adjust input sizes */
+.customTransferForm .sapUiFormResGrid > div {
+    padding-left: 0.25rem !important;
+    padding-right: 0.25rem !important;
+}
+
+/* Reduce default input control height and adjust font padding */
+.customTransferForm .sapMInputBaseInner {
+    height: 2rem !important;
+    font-size: 0.875rem !important;
+}
+
+/* Compact style for Disabled/Read-only fields (Brand, Category, Season, Sub-Category) */
+.customTransferForm .sapMInputBaseReadonlyInner,
+.customTransferForm .sapMInputBaseDisabledInner {
+    background-color: #f3f4f5 !important;
+    border-color: #d9d9d9 !important;
+    color: #555555 !important;
+    font-weight: 500;
+}
+
+/* Align labels vertically and pull them closer to inputs */
+.customTransferForm .sapMLabel {
+    font-weight: 600;
+    font-size: 0.8125rem;
+    color: #32363a;
+}
+
+/* Enhanced Panel borders and subtle header shadow */
+.customPanel {
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 6px !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    background-color: #ffffff !important;
+}
+
+.customPanel .sapMPanelHdr {
+    background-color: #fafafa !important;
+    border-bottom: 1px solid #ebebeb !important;
+}
+
+/* Table header & footer polish */
+.customTable .sapMListTblHeader {
+    background-color: #f7f9fa !important;
+}
+
+.customTable .sapMListTblHeaderCell {
+    font-weight: 600 !important;
+    color: #2c3e50 !important;
+}

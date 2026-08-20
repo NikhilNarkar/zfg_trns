@@ -62,7 +62,17 @@
                             layout="ResponsiveGridLayout"
                             columnsXL="4"
                             columnsL="4"
-                            columnsM="2">
+                            columnsM="2"
+                            labelSpanXL="4"
+                            labelSpanL="4"
+                            labelSpanM="4"
+                            labelSpanS="12"
+                            adjustLabelSpan="false"
+                            emptySpanXL="0"
+                            emptySpanL="0"
+                            emptySpanM="0"
+                            emptySpanS="0"
+                            singleContainerFullWidth="false">
                             <f:content>
 
                                 <!-- Column 1: Plant & Sloc -->
@@ -118,18 +128,30 @@
                                     placeholder="Select style..." />
 
                                 <Label id="lblBrand" text="Brand" />
-                                <Text id="inputBrand" text="{local>/selection/brand}" />
+                                <Input
+                                    id="inputBrand"
+                                    value="{local>/selection/brand}"
+                                    editable="false" />
 
                                 <Label id="lblCategory" text="Category" />
-                                <Text id="inputCategory" text="{local>/selection/category}" />
+                                <Input
+                                    id="inputCategory"
+                                    value="{local>/selection/category}"
+                                    editable="false" />
 
                                 <!-- Column 3: Categories & Batch Mode -->
                                 <core:Title id="titleCol3" text="" />
                                 <Label id="lblSeason" text="Season" />
-                                <Text id="inputSeason" text="{local>/selection/season}" />
+                                <Input
+                                    id="inputSeason"
+                                    value="{local>/selection/season}"
+                                    editable="false" />
 
                                 <Label id="lblSubCategory" text="Sub Category" />
-                                <Text id="inputSubCategory" text="{local>/selection/subCategory}" />
+                                <Input
+                                    id="inputSubCategory"
+                                    value="{local>/selection/subCategory}"
+                                    editable="false" />
 
                                 <Label id="lblSelectionMode" text="Selection Mode" />
                                 <SegmentedButton
@@ -230,13 +252,8 @@
 
                             <headerToolbar>
                                 <OverflowToolbar id="_IDGenOverflowToolbar2">
-                                    <Title id="_IDGenTitle1" text="Stock Items" level="H3" />
+                                    <Title id="_IDGenTitle1" text="Stock Items ({local>/fromItemCount})" level="H3" />
                                     <ToolbarSpacer id="_IDGenToolbarSpacer2" />
-                                    <!-- <SearchField
-                                        id="sfFromItems"
-                                        placeholder="Search stock items..."
-                                        width="14rem"
-                                        liveChange=".onSearchFromItems" /> -->
                                     <ObjectNumber
                                         id="_IDGenObjectNumber"
                                         number="{local>/fromTotalQty}"
@@ -335,8 +352,8 @@
                 <ToolbarSpacer id="_IDGenToolbarSpacer6" />
                 <Button
                     id="btnNew"
-                    text="New"
-                    icon="sap-icon://add-document"
+                    text="Refresh"
+                    icon="sap-icon://refresh"
                     type="Transparent"
                     press=".onNew"
                     tooltip="Start a new transfer" />
