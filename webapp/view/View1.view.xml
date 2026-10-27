@@ -85,47 +85,108 @@
 
                                 <Label id="lblFromPlant" text="From Plant" required="true" />
                                 <Input
-                                    id="inputFromPlant"
-                                    value="{local>/header/fromPlant}"
-                                    showValueHelp="true"
-                                    valueHelpRequest=".onFromPlantValueHelp"
-                                    placeholder="Select source plant..."
-                                    tooltip="Plant the stock is transferred from" />
+    id="inputFromPlant"
+    value="{local>/header/fromPlant}"
+    placeholder="Enter Plant"
+    showValueHelp="true"
+    valueHelpRequest=".onFromPlantValueHelp"
+    showSuggestion="true"
+    suggest=".onPlantSuggest"
+    suggestionItems="{/ZI_PLANTVH}">
+    <suggestionItems>
+    <core:ListItem id="_IDGenListItem" key="{Plant}" text="{Plant}" additionalText="{PlantName}" />
+</suggestionItems>
+</Input>
 
                                 <Label id="lblToPlant" text="To Plant" required="true" />
                                 <Input
-                                    id="inputToPlant"
-                                    value="{local>/header/toPlant}"
-                                    showValueHelp="true"
-                                    valueHelpRequest=".onToPlantValueHelp"
-                                    placeholder="Select destination plant..."
-                                    tooltip="Plant the stock is transferred to" />
+    id="inputToPlant"
+    value="{local>/header/toPlant}"
+    placeholder="Enter Plant"
+    showValueHelp="true"
+    valueHelpRequest=".onToPlantValueHelp"
+    showSuggestion="true"
+    suggest=".onPlantSuggest"
+    suggestionItems="{/ZI_PLANTVH}">
+    <suggestionItems>
+    <core:ListItem id="_IDGenListItems" key="{Plant}" text="{Plant}" additionalText="{PlantName}" />
+</suggestionItems>
+</Input>
 
                                 <Label id="lblFromSloc" text="From Location" required="true" />
-                                <Input
+                                <!-- <Input
                                     id="inputFromSloc"
                                     value="{local>/header/fromSloc}"
                                     showValueHelp="true"
                                     valueHelpRequest=".onFromSlocValueHelp"
-                                    placeholder="Select source storage location..." />
+                                    placeholder="Select source storage location..." /> -->
+
+                                    <!-- From Location Input -->
+<Input
+    id="inputFromSloc"
+    value="{local>/header/fromSloc}"
+    placeholder="Enter Location"
+    showValueHelp="true"
+    valueHelpRequest=".onFromSlocValueHelp"
+    showSuggestion="true"
+    suggest=".onLocationSuggest"
+    suggestionItems="{/ZI_STORAGELOCATION_VH}"> <!-- Replace with your Storage Location entity set -->
+    <suggestionItems>
+        <core:ListItem id="_IDGenListItem1" key="{StorageLocation}" text="{StorageLocation}" additionalText="{StorageLocationName}" />
+    </suggestionItems>
+</Input>
 
                                 <!-- Column 2: Material -->
                                 <core:Title id="titleCol2" text="" />
                                 <Label id="lblToSloc" text="To Location" required="true" />
-                                <Input
+                                <!-- <Input
                                     id="inputToSloc"
                                     value="{local>/header/toSloc}"
                                     showValueHelp="true"
                                     valueHelpRequest=".onToSlocValueHelp"
-                                    placeholder="Select destination storage location..." />
+                                    placeholder="Select destination storage location..." /> -->
+
+                                    <Input
+    id="inputToSloc"
+    value="{local>/header/toSloc}"
+    placeholder="Enter Location"
+    showValueHelp="true"
+    valueHelpRequest=".onToSlocValueHelp"
+    showSuggestion="true"
+    suggest=".onLocationSuggest"
+    suggestionItems="{/ZI_STORAGELOCATION_VH}"> <!-- Replace with your Storage Location entity set -->
+    <suggestionItems>
+        <core:ListItem id="_IDGenListItem2" key="{StorageLocation}" text="{StorageLocation}" additionalText="{StorageLocationName}" />
+    </suggestionItems>
+</Input>
 
                                 <Label id="lblStyle" text="Style" required="true" />
-                                <Input
+                                <!-- <Input
                                     id="inputStyle"
                                     value="{local>/selection/style}"
                                     showValueHelp="true"
                                     valueHelpRequest=".onStyleValueHelp"
-                                    placeholder="Select style..." />
+                                    placeholder="Select style..." /> -->
+
+                                    <!-- Style Input -->
+<Input
+    id="inputStyle"
+    value="{local>/selection/style}"
+    placeholder="Enter Style"
+    showValueHelp="true"
+    valueHelpRequest=".onStyleValueHelp"
+    showSuggestion="true"
+    
+    suggest=".onStyleSuggest"
+    suggestionItemSelected=".onStyleSuggestionItemSelected"
+    suggestionItems="{/ZI_FG_STYLE}">
+    <suggestionItems>
+        <core:ListItem id="_IDGenListItem3" 
+            key="{StyleName}" 
+            text="{StyleName}" 
+            additionalText="{StyleDesc}" />
+    </suggestionItems>
+</Input>
 
                                 <Label id="lblBrand" text="Brand" />
                                 <Input

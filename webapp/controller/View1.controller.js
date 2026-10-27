@@ -106,21 +106,26 @@
             // PLANT VALUE HELP LOGIC
             // ==========================================
 
-            onPlantSuggest: function (oEvent) {
-                var sTerm = oEvent.getParameter("suggestValue");
-                var aFilters = [];
+           onPlantSuggest: function (oEvent) {
+    var sTerm = oEvent.getParameter("suggestValue");
+    var aFilters = [];
 
-                if (sTerm) {
-                    aFilters.push(new Filter({
-                        filters: [
-                            new Filter("Plant", FilterOperator.StartsWith, sTerm),
-                            new Filter("PlantName", FilterOperator.Contains, sTerm)
-                        ],
-                        and: false
-                    }));
-                }
-                oEvent.getSource().getBinding("suggestionItems").filter(aFilters);
-            },
+    if (sTerm) {
+        aFilters.push(new Filter({
+            filters: [
+                new Filter("Plant", FilterOperator.StartsWith, sTerm),
+                new Filter("PlantName", FilterOperator.Contains, sTerm)
+            ],
+            and: false
+        }));
+    }
+    
+    // Filter suggestion binding dynamically
+    var oBinding = oEvent.getSource().getBinding("suggestionItems");
+    if (oBinding) {
+        oBinding.filter(aFilters);
+    }
+},
 
             onFromPlantValueHelp: function () {
                 this._sPlantTarget = "from";
@@ -201,6 +206,8 @@
             // ==========================================
             // STORAGE LOCATION VALUE HELP LOGIC
             // ==========================================
+
+        
 
             onFromSlocValueHelp: function () {
                 this._sSlocTarget = "from";
@@ -312,6 +319,25 @@
                     }
                 }
             },
+                onLocationSuggest: function (oEvent) {
+    var sTerm = oEvent.getParameter("suggestValue");
+    var aFilters = [];
+
+    if (sTerm) {
+        aFilters.push(new sap.ui.model.Filter({
+            filters: [
+                new sap.ui.model.Filter("StorageLocation", sap.ui.model.FilterOperator.Contains, sTerm),
+                new sap.ui.model.Filter("StorageLocationName", sap.ui.model.FilterOperator.Contains, sTerm)
+            ],
+            and: false
+        }));
+    }
+
+    var oBinding = oEvent.getSource().getBinding("suggestionItems");
+    if (oBinding) {
+        oBinding.filter(aFilters);
+    }
+},
 
             // ==========================================
             // STYLE VALUE HELP LOGIC
@@ -354,6 +380,8 @@
                     fnApplyPlantFilter(this._oStyleDialog);
                 }
             },
+
+            
 
             onStyleVHSearch: function (oEvent) {
                 var sValue = oEvent.getParameter("value");
@@ -423,6 +451,12 @@
                 if (this.byId("inputSeason")) { this.byId("inputSeason").setValue(sSeason); }
                 if (this.byId("inputSubCategory")) { this.byId("inputSubCategory").setValue(sSubCat); }
             },
+
+         
+
+
+
+
 
             // ==========================================
             // BATCH VALUE HELP LOGIC
@@ -860,141 +894,159 @@
                 oLocalModel.setProperty("/fromTotalQty", iTotal);
             },
 
-            onSubmit: function () {
-        var oView = this.getView();
-        var oLocalModel = oView.getModel("local");
-        var oODataModel = oView.getModel();
+           onSubmit: function () {
+    var oView = this.getView();
+    var oLocalModel = oView.getModel("local");
+    var oODataModel = oView.getModel();
 
-        var oHeader = oLocalModel.getProperty("/header") || {};
-        var oSelection = oLocalModel.getProperty("/selection") || {};
-        var aScannedBatches = oLocalModel.getProperty("/fromLocationItems") || [];
+    var oHeader = oLocalModel.getProperty("/header") || {};
+    var oSelection = oLocalModel.getProperty("/selection") || {};
+    var aScannedBatches = oLocalModel.getProperty("/fromLocationItems") || [];
 
-        // 1. Mandatory Header Field Validation
-        if (!oHeader.fromPlant || !oHeader.toPlant || !oHeader.fromSloc || !oHeader.toSloc || !oHeader.postingDate) {
-            MessageBox.error("Please fill in all mandatory fields: From/To Plant, From/To Storage Location, and Posting Date.");
+    // 1. Mandatory Header Field Validation
+    if (!oHeader.fromPlant || !oHeader.toPlant || !oHeader.fromSloc || !oHeader.toSloc || !oHeader.postingDate) {
+        MessageBox.error("Please fill in all mandatory fields: From/To Plant, From/To Storage Location, and Posting Date.");
+        return;
+    }
+
+    // 2. Item List Validation
+    if (aScannedBatches.length === 0) {
+        MessageBox.error("There are no items in the table to submit.");
+        return;
+    }
+
+    for (var i = 0; i < aScannedBatches.length; i++) {
+        var oBatch = aScannedBatches[i];
+        var fQtyToTransfer = parseFloat(oBatch.quantity ?? oBatch.qty) || 0;
+        var sBatchNo = oBatch.batch || oBatch.FromBatch || "";
+
+        if (fQtyToTransfer <= 0) {
+            MessageBox.error(
+                "Error on Batch " + sBatchNo + ":\n\n" +
+                "Quantity to Transfer must be greater than zero."
+            );
             return;
         }
+    }
 
-        // 2. Item List Validation
-        if (aScannedBatches.length === 0) {
-            MessageBox.error("There are no items in the table to submit.");
-            return;
+    // 3. Helper Functions for String Padding & Date Formatting
+    var fnPadStart = function (vVal, iLen) {
+        if (!vVal) return "";
+        return String(vVal).padStart(iLen, "0");
+    };
+
+    // Format "DD.MM.YYYY" or Date Object to "YYYY-MM-DD"
+    var sRawDate = oHeader.postingDate;
+    var sFormattedDate = "";
+    if (sRawDate instanceof Date) {
+        var sY = sRawDate.getFullYear();
+        var sM = String(sRawDate.getMonth() + 1).padStart(2, "0");
+        var sD = String(sRawDate.getDate()).padStart(2, "0");
+        sFormattedDate = sY + "-" + sM + "-" + sD;
+    } else if (typeof sRawDate === "string" && sRawDate.includes(".")) {
+        var aParts = sRawDate.split(".");
+        if (aParts.length === 3) {
+            sFormattedDate = aParts[2] + "-" + aParts[1] + "-" + aParts[0];
         }
+    } else {
+        sFormattedDate = sRawDate || "";
+    }
 
-        for (var i = 0; i < aScannedBatches.length; i++) {
-            var oBatch = aScannedBatches[i];
-            var fQtyToTransfer = parseFloat(oBatch.quantity ?? oBatch.qty) || 0;
-            var sBatchNo = oBatch.batch || oBatch.FromBatch || "";
+    // 4. Map Line Items Payload (Matches ZC_FG_TRNS_IT)
+    var aItemsPayload = aScannedBatches.map(function (oBatch) {
+        var nQty = parseFloat(oBatch.quantity ?? oBatch.qty) || 0;
+        var sFromBatch = oBatch.batch || oBatch.FromBatch || "";
+        var sToBatch = oBatch.toBatch || oBatch.transferBatch || sFromBatch;
+        var sSo = oBatch.salesOrder || oBatch.SalesOrder || "";
+        var sSoItem = oBatch.soLineItem || oBatch.salesOrderItem || oBatch.SalesOrderItem || "";
 
-            if (fQtyToTransfer <= 0) {
-                MessageBox.error(
-                    "Error on Batch " + sBatchNo + ":\n\n" +
-                    "Quantity to Transfer must be greater than zero."
-                );
-                return;
-            }
-        }
-
-        // 3. Helper Functions for String Padding & Date Formatting
-        var fnPadStart = function (vVal, iLen) {
-            if (!vVal) return "";
-            return String(vVal).padStart(iLen, "0");
+        return {
+            "Material": oBatch.material || "",
+            "Qty": String(nQty),
+            "Unit": oBatch.uom || "PC",
+            "Batch": sFromBatch,
+            "ToBatch": sToBatch,
+            "SalesOrder": fnPadStart(sSo, 10),
+            "SalesOrderItem": fnPadStart(sSoItem, 6),
+            "Style": oBatch.style || oSelection.style || ""
         };
+    });
 
-        // Format "DD.MM.YYYY" or Date Object to "YYYY-MM-DD"
-        var sRawDate = oHeader.postingDate;
-        var sFormattedDate = "";
-        if (sRawDate instanceof Date) {
-            var sY = sRawDate.getFullYear();
-            var sM = String(sRawDate.getMonth() + 1).padStart(2, "0");
-            var sD = String(sRawDate.getDate()).padStart(2, "0");
-            sFormattedDate = sY + "-" + sM + "-" + sD;
-        } else if (typeof sRawDate === "string" && sRawDate.includes(".")) {
-            var aParts = sRawDate.split(".");
-            if (aParts.length === 3) {
-                sFormattedDate = aParts[2] + "-" + aParts[1] + "-" + aParts[0];
-            }
+    // 5. Build Header Payload (Exact field mapping to ZC_FG_TRNS_HD)
+    var oPayload = {
+        "FromPlant": oHeader.fromPlant,
+        "ToPlant": oHeader.toPlant,
+        "FromStorloc": oHeader.fromSloc,
+        "ToStorloc": oHeader.toSloc,
+        "PostingDate": sFormattedDate,
+        "Style": oSelection.style || "",
+        "Remark": oHeader.remark || "",
+        "_Item": aItemsPayload
+    };
+
+    // Reset screen after a successful posting
+    var fnResetScreen = function () {
+        oLocalModel.setProperty("/fromLocationItems", []);
+        oLocalModel.setProperty("/fromTotalQty", 0);
+        oLocalModel.setProperty("/header/fromPlant", "");
+        oLocalModel.setProperty("/header/toPlant", "");
+        oLocalModel.setProperty("/header/fromSloc", "");
+        oLocalModel.setProperty("/header/toSloc", "");
+        oLocalModel.setProperty("/selection/manualBatch", "");
+        oLocalModel.setProperty("/selection/scannedBatch", "");
+
+        var oFromPlantInput = oView.byId("inputFromPlant");
+        if (oFromPlantInput) {
+            oFromPlantInput.focus();
+        }
+    };
+
+    // Decide success / error ONLY on MatDoc
+    var fnShowResult = function (sMatDoc, sMess) {
+        var sDoc = (sMatDoc || "").trim();
+        var bHasMatDoc = sDoc !== "" && !/^0+$/.test(sDoc);
+
+        if (bHasMatDoc) {
+            MessageBox.success("Transfer Posting " + sDoc + " created successfully!", {
+                onClose: fnResetScreen
+            });
         } else {
-            sFormattedDate = sRawDate || "";
+            // Keep the screen data so the user can correct and resubmit
+            MessageBox.error(
+                (sMess && sMess.trim()) ? sMess : "Material document was not created. Please check the data and try again."
+            );
         }
+    };
 
-        // 4. Map Line Items Payload (Matches ZC_FG_TRNS_IT)
-        var aItemsPayload = aScannedBatches.map(function (oBatch) {
-            var nQty = parseFloat(oBatch.quantity ?? oBatch.qty) || 0;
-            var sFromBatch = oBatch.batch || oBatch.FromBatch || "";
-            var sToBatch = oBatch.toBatch || oBatch.transferBatch || sFromBatch;
-            var sSo = oBatch.salesOrder || oBatch.SalesOrder || "";
-            var sSoItem = oBatch.soLineItem || oBatch.salesOrderItem || oBatch.SalesOrderItem || "";
+    oView.setBusy(true);
 
-            return {
-                "Material": oBatch.material || "",
-                "Qty": String(nQty),
-                "Unit": oBatch.uom || "PC",
-                "Batch": sFromBatch,
-                "ToBatch": sToBatch,
-                "SalesOrder": fnPadStart(sSo, 10),
-                "SalesOrderItem": fnPadStart(sSoItem, 6),
-                "Style": oBatch.style || oSelection.style || ""
-            };
+    // 6. OData V4 List Binding Create on Projection View ZC_FG_TRNS_HD
+    var oListBinding = oODataModel.bindList("/ZC_FG_TRNS_HD");
+    var oContext = oListBinding.create(oPayload);
+
+    oContext.created().then(function () {
+        // MatDoc / Mess are filled during the save phase, so re-read the
+        // record from the backend instead of trusting the POST response
+        var oReadBinding = oODataModel.bindContext(oContext.getPath());
+        return oReadBinding.requestObject().then(function (oData) {
+            oView.setBusy(false);
+            oData = oData || {};
+            fnShowResult(oData.MatDoc, oData.Mess);
+        }, function () {
+            // Fallback: use whatever came back with the create response
+            oView.setBusy(false);
+            fnShowResult(oContext.getProperty("MatDoc"), oContext.getProperty("Mess"));
         });
 
-        // 5. Build Header Payload (Exact field mapping to ZC_FG_TRNS_HD)
-        var oPayload = {
-            "FromPlant": oHeader.fromPlant,
-            "ToPlant": oHeader.toPlant,
-            "FromStorloc": oHeader.fromSloc, // Field name matching projection 'FromStorloc'
-            "ToStorloc": oHeader.toSloc,     // Field name matching projection 'ToStorloc'
-            "PostingDate": sFormattedDate,
-            "Style": oSelection.style || "",
-            "Remark": oHeader.remark || "",
-            "_Item": aItemsPayload
-        };
-
-        oView.setBusy(true);
-
-        // 6. OData V4 List Binding Create on Projection View ZC_FG_TRNS_HD
-        var oListBinding = oODataModel.bindList("/ZC_FG_TRNS_HD");
-        var oContext = oListBinding.create(oPayload);
-
-        oContext.created().then(function () {
-            oView.setBusy(false);
-
-            var sMess = oContext.getProperty("Mess");
-            var sMatDoc = oContext.getProperty("MatDoc");
-
-            if (sMess && sMess.toLowerCase().includes("error")) {
-                MessageBox.error("SAP Business Error:\n\n" + sMess);
-            } else {
-                var sSuccessMsg = sMatDoc ? "Transfer Posting " + sMatDoc + " submitted successfully!" : "FG Stock Transfer created successfully!";
-                MessageBox.success(sSuccessMsg, {
-                    onClose: function () {
-                        // Reset table and header inputs in local model
-                        oLocalModel.setProperty("/fromLocationItems", []);
-                        oLocalModel.setProperty("/fromTotalQty", 0);
-                        oLocalModel.setProperty("/header/fromPlant", "");
-                        oLocalModel.setProperty("/header/toPlant", "");
-                        oLocalModel.setProperty("/header/fromSloc", "");
-                        oLocalModel.setProperty("/header/toSloc", "");
-                        oLocalModel.setProperty("/selection/manualBatch", "");
-                        oLocalModel.setProperty("/selection/scannedBatch", "");
-
-                        var oFromPlantInput = oView.byId("inputFromPlant");
-                        if (oFromPlantInput) {
-                            oFromPlantInput.focus();
-                        }
-                    }
-                });
-            }
-
-        }).catch(function (oError) {
-            oView.setBusy(false);
-            var sErrorMsg = "Failed to post FG Transfer due to a server/network error.";
-            if (oError && oError.message) {
-                sErrorMsg = oError.message;
-            }
-            MessageBox.error(sErrorMsg);
-        });
-    },
+    }).catch(function (oError) {
+        oView.setBusy(false);
+        var sErrorMsg = "Failed to post FG Transfer due to a server/network error.";
+        if (oError && oError.message) {
+            sErrorMsg = oError.message;
+        }
+        MessageBox.error(sErrorMsg);
+    });
+},
     onNew: function () {
         var oView = this.getView();
         var oLocalModel = oView.getModel("local");

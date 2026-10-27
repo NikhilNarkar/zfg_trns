@@ -3,6 +3,7 @@
         title="Select Plant"
         items="{/ZI_PLANTVH}"
         confirm=".onPlantVHConfirm"
+        
         search=".onPlantVHSearch"
         >
         <StandardListItem id="_IDGenStandardListItem1" title="{Plant}" description="{PlantName}" />
