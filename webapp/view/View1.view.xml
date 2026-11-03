@@ -78,10 +78,12 @@
                                 <!-- Column 1: Plant & Sloc -->
                                 <core:Title id="titleCol1" text="" />
                                 <Label id="lblPostingDate" text="Posting Date" required="true" />
-                                <DatePicker
-                                    id="dpPostingDate"
-                                    value="{local>/header/postingDate}"
-                                    tooltip="Date the transfer is posted" />
+                              <DatePicker
+    id="dpPostingDate"
+    value="{local>/header/postingDate}"
+    valueFormat="dd.MM.yyyy"
+    displayFormat="dd.MM.yyyy"
+    width="100%" />
 
                                 <Label id="lblFromPlant" text="From Plant" required="true" />
                                 <Input
@@ -164,7 +166,7 @@
                                 <!-- <Input
                                     id="inputStyle"
                                     value="{local>/selection/style}"
-                                    showValueHelp="true"
+                                     showValueHelp="true"
                                     valueHelpRequest=".onStyleValueHelp"
                                     placeholder="Select style..." /> -->
 

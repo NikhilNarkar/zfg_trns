@@ -936,47 +936,21 @@
     };
 
     // Format "DD.MM.YYYY" or Date Object to "YYYY-MM-DD"
-        // Convert any posting date format to "YYYY-MM-DD"
-    var fnPad2 = function (v) { return String(v).padStart(2, "0"); };
-    var vRawDate = oHeader.postingDate;
+    var sRawDate = oHeader.postingDate;
     var sFormattedDate = "";
-    var aMatch;
-
-    if (vRawDate instanceof Date) {
-        sFormattedDate = vRawDate.getFullYear() + "-" +
-                         fnPad2(vRawDate.getMonth() + 1) + "-" +
-                         fnPad2(vRawDate.getDate());
-    } else if (typeof vRawDate === "string") {
-        var sDate = vRawDate.trim();
-
-        if (/^\d{4}-\d{2}-\d{2}$/.test(sDate)) {
-            sFormattedDate = sDate;                                             // YYYY-MM-DD
-        } else if ((aMatch = sDate.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/))) {
-            sFormattedDate = aMatch[3] + "-" + fnPad2(aMatch[2]) + "-" + fnPad2(aMatch[1]);   // DD.MM.YYYY
-        } else if ((aMatch = sDate.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/))) {
-            sFormattedDate = aMatch[3] + "-" + fnPad2(aMatch[1]) + "-" + fnPad2(aMatch[2]);   // MM/DD/YYYY
+    if (sRawDate instanceof Date) {
+        var sY = sRawDate.getFullYear();
+        var sM = String(sRawDate.getMonth() + 1).padStart(2, "0");
+        var sD = String(sRawDate.getDate()).padStart(2, "0");
+        sFormattedDate = sY + "-" + sM + "-" + sD;
+    } else if (typeof sRawDate === "string" && sRawDate.includes(".")) {
+        var aParts = sRawDate.split(".");
+        if (aParts.length === 3) {
+            sFormattedDate = aParts[2] + "-" + aParts[1] + "-" + aParts[0];
         }
+    } else {
+        sFormattedDate = sRawDate || "";
     }
-
-    if (!sFormattedDate) {
-        MessageBox.error("Invalid Posting Date. Please select the date again.");
-        return;
-    }
-    // var sRawDate = oHeader.postingDate;
-    // var sFormattedDate = "";
-    // if (sRawDate instanceof Date) {
-    //     var sY = sRawDate.getFullYear();
-    //     var sM = String(sRawDate.getMonth() + 1).padStart(2, "0");
-    //     var sD = String(sRawDate.getDate()).padStart(2, "0");
-    //     sFormattedDate = sY + "-" + sM + "-" + sD;
-    // } else if (typeof sRawDate === "string" && sRawDate.includes(".")) {
-    //     var aParts = sRawDate.split(".");
-    //     if (aParts.length === 3) {
-    //         sFormattedDate = aParts[2] + "-" + aParts[1] + "-" + aParts[0];
-    //     }
-    // } else {
-    //     sFormattedDate = sRawDate || "";
-    // }
 
     // 4. Map Line Items Payload (Matches ZC_FG_TRNS_IT)
     var aItemsPayload = aScannedBatches.map(function (oBatch) {
