@@ -7,6 +7,9 @@ sap.ui.define([
     return UIComponent.extend("zfgtrns.Component", {
         metadata: {
             manifest: "json",
+            events: {
+                appSuspend: {}
+            },
             interfaces: [
                 "sap.ui.core.IAsyncContentCreation"
             ]
@@ -21,6 +24,10 @@ sap.ui.define([
 
             // enable routing
             this.getRouter().initialize();
+        },
+
+        suspend() {
+            this.fireAppSuspend();
         }
     });
 });

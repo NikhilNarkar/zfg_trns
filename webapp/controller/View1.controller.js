@@ -6,28 +6,33 @@
         "sap/m/MessageToast",
         "sap/ui/model/Filter",
         "sap/ui/model/FilterOperator",
-        "sap/m/MessageBox"
-    ], function (Controller, Fragment, Spreadsheet, exportLibrary, MessageToast, Filter, FilterOperator, MessageBox) {
+        "sap/m/MessageBox",
+        "sap/base/Log"
+    ], function (Controller, Fragment, Spreadsheet, exportLibrary, MessageToast, Filter, FilterOperator, MessageBox, Log) {
         "use strict";
         var EdmType = exportLibrary.EdmType;
-        var oToday = new Date();
-        var sDay = String(oToday.getDate()).padStart(2, '0');
-        var sMonth = String(oToday.getMonth() + 1).padStart(2, '0');
-        var sYear = oToday.getFullYear();
-        var sTodayFormatted = sDay + "." + sMonth + "." + sYear;
-
         return Controller.extend("zfgtrns.controller.View1", {
 
             onInit: function () {
-                
-                var oLocalModel = new sap.ui.model.json.JSONModel({
+                var oLocalModel = new sap.ui.model.json.JSONModel(this._createTransferFormData());
+                this.getView().setModel(oLocalModel, "local");
+                this.getOwnerComponent().attachAppSuspend(this._destroyStyleDialog, this);
+            },
+
+            _createTransferFormData: function () {
+                var oToday = new Date();
+                var sDay = String(oToday.getDate()).padStart(2, "0");
+                var sMonth = String(oToday.getMonth() + 1).padStart(2, "0");
+                return {
+                    postingSuccessful: false,
                     header: {
                         selectionMode: "MANUAL",
-                        postingDate: sTodayFormatted,
+                        postingDate: sDay + "." + sMonth + "." + oToday.getFullYear(),
                         fromPlant: "",
                         toPlant: "",
                         fromSloc: "",
-                        toSloc: ""
+                        toSloc: "",
+                        remark: ""
                     },
                     selection: {
                         style: "",
@@ -43,11 +48,15 @@
                     fromItemCount: 0,
                     toLocationItems: [],
                     toTotalQty: 0
-                });
-                this.getView().setModel(oLocalModel, "local");
+                };
             },
 
-            onExportExcel: function () {
+            onExit: function () {
+                this.getOwnerComponent().detachAppSuspend(this._destroyStyleDialog, this);
+                this._destroyStyleDialog();
+            },
+
+            onExportButtonPress: function () {
                 var oView = this.getView();
                 var oLocalModel = oView.getModel("local");
                 var aItems = oLocalModel.getProperty("/fromLocationItems");
@@ -96,7 +105,7 @@
                 ];
             },
 
-            onSelectionModeChange: function (oEvent) {
+            onSegmentedButtonSelectionChange: function (oEvent) {
                 var sSelectedKey = oEvent.getParameter("key");
                 var oLocalModel = this.getView().getModel("local");
                 oLocalModel.setProperty("/header/selectionMode", sSelectedKey);
@@ -105,6 +114,13 @@
             // ==========================================
             // PLANT VALUE HELP LOGIC
             // ==========================================
+
+            onFromPlantInputSuggest: function (oEvent) {
+                this.onPlantSuggest(oEvent);
+            },
+            onToPlantInputSuggest: function (oEvent) {
+                this.onPlantSuggest(oEvent);
+            },
 
            onPlantSuggest: function (oEvent) {
     var sTerm = oEvent.getParameter("suggestValue");
@@ -127,12 +143,12 @@
     }
 },
 
-            onFromPlantValueHelp: function () {
+            onFromPlantInputValueHelpRequest: function () {
                 this._sPlantTarget = "from";
                 this._openPlantDialog();
             },
 
-            onToPlantValueHelp: function () {
+            onToPlantInputValueHelpRequest: function () {
                 this._sPlantTarget = "to";
                 this._openPlantDialog();
             },
@@ -155,7 +171,7 @@
                 }
             },
 
-            onPlantVHSearch: function (oEvent) {
+            onZiPlantvhSelectDialogSearch: function (oEvent) {
                 var sValue = oEvent.getParameter("value");
                 var aFilters = [];
 
@@ -171,7 +187,7 @@
                 oEvent.getSource().getBinding("items").filter(aFilters);
             },
 
-            onPlantVHConfirm: function (oEvent) {
+            onZiPlantvhSelectDialogConfirm: function (oEvent) {
                 var oSelectedItem = oEvent.getParameter("selectedItem");
                 if (oSelectedItem) {
                     var oContext = oSelectedItem.getBindingContext();
@@ -187,13 +203,13 @@
                         if (oLocalModel) {
                             oLocalModel.setProperty("/header/toPlant", sPlant);
                         }
-                        var oToInput = this.byId("inputToPlant");
+                        var oToInput = this.byId("idToPlantInput");
                         if (oToInput) { oToInput.setValue(sPlant); }
                     } else {
                         if (oLocalModel) {
                             oLocalModel.setProperty("/header/fromPlant", sPlant);
                         }
-                        var oFromInput = this.byId("inputFromPlant") || this.byId("inputPlant");
+                        var oFromInput = this.byId("idFromPlantInput") || this.byId("inputPlant");
                         if (oFromInput) { oFromInput.setValue(sPlant); }
                     }
 
@@ -209,71 +225,71 @@
 
         
 
-            onFromSlocValueHelp: function () {
-                this._sSlocTarget = "from";
-                this._openSlocDialog();
+            onFromSlocInputValueHelpRequest: function () {
+                this._openSlocDialog("from");
             },
 
-            onToSlocValueHelp: function () {
-                this._sSlocTarget = "to";
-                this._openSlocDialog();
+            onToSlocInputValueHelpRequest: function () {
+                this._openSlocDialog("to");
             },
 
-            _openSlocDialog: function () {
+            _openSlocDialog: function (sTarget) {
+                if (this._pSlocDialog) {
+                    return;
+                }
+
                 var oView = this.getView();
                 var oLocalModel = oView.getModel("local");
-
-                var sPlantPath = this._sSlocTarget === "to" ? "/header/toPlant" : "/header/fromPlant";
-                var sPlant = oLocalModel ? oLocalModel.getProperty(sPlantPath) : "";
-
+                var bFrom = sTarget === "from";
+                var sPlant = this._getSlocPlant(oLocalModel, sTarget);
                 if (!sPlant) {
-                    var sInputId = this._sSlocTarget === "to" ? "inputToPlant" : "inputFromPlant";
-                    var oPlantInput = this.byId(sInputId) || this.byId("inputPlant");
-                    if (oPlantInput) {
-                        sPlant = oPlantInput.getValue();
-                    }
+                    MessageToast.show(bFrom ? "Please select From Plant first." : "Please select To Plant first.");
+                    return;
                 }
 
+                this._sSlocTarget = sTarget;
+                this._sSlocDialogPlant = sPlant;
+                var fnOpen = function (oDialog) {
+                    oDialog.setTitle(bFrom ? "Select From Storage Location" : "Select To Storage Location");
+                    this._filterSlocBinding(oDialog.getBinding("items"), sPlant, "");
+                    oDialog.open();
+                }.bind(this);
                 if (!this._oSlocDialog) {
-                    Fragment.load({
-                        id: oView.getId() + "--SlocDialog",
-                        name: "zfgtrns.view.FromSlocVH",
-                        controller: this
+                    this._pSlocDialog = this.loadFragment({
+                        id: "SlocDialog",
+                        name: "zfgtrns.view.FromSlocVH"
                     }).then(function (oDialog) {
+                        this._pSlocDialog = null;
                         this._oSlocDialog = oDialog;
-                        oView.addDependent(this._oSlocDialog);
-                        this._applySlocPlantFilter(sPlant);
-                        this._oSlocDialog.open();
+                        fnOpen(oDialog);
+                    }.bind(this), function (oError) {
+                        this._pSlocDialog = null;
+                        Log.error("Could not load Storage Location value help", oError && oError.message, "zfgtrns.controller.View1");
                     }.bind(this));
                 } else {
-                    this._applySlocPlantFilter(sPlant);
-                    this._oSlocDialog.open();
+                    fnOpen(this._oSlocDialog);
                 }
             },
 
-            _applySlocPlantFilter: function (sPlant) {
-                var aFilters = [];
-                if (sPlant) {
-                    aFilters.push(new Filter("Plant", FilterOperator.EQ, sPlant));
+            _getSlocPlant: function (oLocalModel, sTarget) {
+                var sPlant = oLocalModel.getProperty("/header/" + sTarget + "Plant");
+                if (!sPlant) {
+                    var oInput = this.byId(sTarget === "from" ? "idFromPlantInput" : "idToPlantInput");
+                    sPlant = oInput ? oInput.getValue() : "";
                 }
-                if (this._oSlocDialog) {
-                    var oBinding = this._oSlocDialog.getBinding("items");
-                    if (oBinding) {
-                        oBinding.filter(aFilters);
-                    }
-                }
+                return sPlant.trim();
             },
 
             onFromSlocVHSearch: function (oEvent) {
-                var sValue = oEvent.getParameter("value");
-                var oLocalModel = this.getView().getModel("local");
-                var sPlantPath = this._sSlocTarget === "to" ? "/header/toPlant" : "/header/fromPlant";
-                var sPlant = oLocalModel ? oLocalModel.getProperty(sPlantPath) : "";
+                this._filterSlocBinding(oEvent.getSource().getBinding("items"),
+                    this._sSlocDialogPlant, oEvent.getParameter("value"));
+            },
 
-                var aFilters = [];
-                if (sPlant) {
-                    aFilters.push(new Filter("Plant", FilterOperator.EQ, sPlant));
+            _filterSlocBinding: function (oBinding, sPlant, sValue) {
+                if (!oBinding || !sPlant) {
+                    return;
                 }
+                var aFilters = [new Filter("Plant", FilterOperator.EQ, sPlant)];
 
                 if (sValue) {
                     aFilters.push(new Filter({
@@ -285,7 +301,10 @@
                     }));
                 }
 
-                oEvent.getSource().getBinding("items").filter(aFilters);
+                oBinding.filter(new Filter({ filters: aFilters, and: true }));
+                if (oBinding.isSuspended()) {
+                    oBinding.resume();
+                }
             },
 
             onFromSlocVHConfirm: function (oEvent) {
@@ -304,13 +323,13 @@
                         if (oLocalModel) {
                             oLocalModel.setProperty("/header/toSloc", sSloc);
                         }
-                        var oToSlocInput = this.byId("inputToSloc");
+                        var oToSlocInput = this.byId("idToSlocInput");
                         if (oToSlocInput) { oToSlocInput.setValue(sSloc); }
                     } else {
                         if (oLocalModel) {
                             oLocalModel.setProperty("/header/fromSloc", sSloc);
                         }
-                        var oFromSlocInput = this.byId("inputFromSloc");
+                        var oFromSlocInput = this.byId("idFromSlocInput");
                         if (oFromSlocInput) { oFromSlocInput.setValue(sSloc); }
                     }
 
@@ -319,37 +338,57 @@
                     }
                 }
             },
-                onLocationSuggest: function (oEvent) {
-    var sTerm = oEvent.getParameter("suggestValue");
-    var aFilters = [];
+            onFromSlocInputSuggest: function (oEvent) {
+                this._suggestSloc(oEvent, "from");
+            },
+            onToSlocInputSuggest: function (oEvent) {
+                this._suggestSloc(oEvent, "to");
+            },
 
-    if (sTerm) {
-        aFilters.push(new sap.ui.model.Filter({
-            filters: [
-                new sap.ui.model.Filter("StorageLocation", sap.ui.model.FilterOperator.Contains, sTerm),
-                new sap.ui.model.Filter("StorageLocationName", sap.ui.model.FilterOperator.Contains, sTerm)
-            ],
-            and: false
-        }));
-    }
-
-    var oBinding = oEvent.getSource().getBinding("suggestionItems");
-    if (oBinding) {
-        oBinding.filter(aFilters);
-    }
-},
+            _suggestSloc: function (oEvent, sTarget) {
+                var sTerm = oEvent.getParameter("suggestValue").trim();
+                if (sTerm) {
+                    var oLocalModel = this.getView().getModel("local");
+                    this._filterSlocBinding(oEvent.getSource().getBinding("suggestionItems"),
+                        this._getSlocPlant(oLocalModel, sTarget), sTerm);
+                }
+            },
 
             // ==========================================
             // STYLE VALUE HELP LOGIC
             // ==========================================
 
-            onStyleValueHelp: function () {
+            onStyleInputSuggest: function (oEvent) {
+                var sValue = oEvent.getParameter("suggestValue").trim();
+                var sFromPlant = this.getView().getModel("local").getProperty("/header/fromPlant");
+                var oBinding = oEvent.getSource().getBinding("suggestionItems");
+                if (!sValue || !sFromPlant || !oBinding) {
+                    return;
+                }
+
+                oBinding.filter(this._getStyleFilters(sFromPlant, sValue));
+                if (oBinding.isSuspended()) {
+                    oBinding.resume();
+                }
+            },
+
+            onStyleInputSuggestionItemSelected: function (oEvent) {
+                var oItem = oEvent.getParameter("selectedItem");
+                if (oItem) {
+                    var oContext = oItem.getBindingContext();
+                    if (oContext) {
+                        this._applySelectedStyle(oContext.getObject());
+                    }
+                }
+            },
+
+            onStyleInputValueHelpRequest: function () {
                 var oView = this.getView();
                 var oLocalModel = oView.getModel("local");
 
                 var sFromPlant = oLocalModel ? oLocalModel.getProperty("/header/fromPlant") : "";
-                if (!sFromPlant && this.byId("inputFromPlant")) {
-                    sFromPlant = this.byId("inputFromPlant").getValue();
+                if (!sFromPlant && this.byId("idFromPlantInput")) {
+                    sFromPlant = this.byId("idFromPlantInput").getValue();
                 }
 
                 if (!sFromPlant) {
@@ -366,28 +405,61 @@
                     oDialog.open();
                 };
 
-                if (!this._oStyleDialog) {
-                    Fragment.load({
-                        id: oView.getId() + "--StyleDialog",
-                        name: "zfgtrns.view.StyleVH",
-                        controller: this
-                    }).then(function (oDialog) {
-                        this._oStyleDialog = oDialog;
-                        oView.addDependent(this._oStyleDialog);
-                        fnApplyPlantFilter(this._oStyleDialog);
-                    }.bind(this));
-                } else {
+                if (this._oStyleDialog) {
                     fnApplyPlantFilter(this._oStyleDialog);
+                    return;
+                }
+
+                this._fnOpenStyleDialog = fnApplyPlantFilter;
+                if (this._pStyleDialog) {
+                    return;
+                }
+
+                this._pStyleDialog = Fragment.load({
+                    id: oView.getId() + "--StyleDialog",
+                    name: "zfgtrns.view.StyleVH",
+                    controller: this
+                }).then(function (oDialog) {
+                    var fnOpen = this._fnOpenStyleDialog;
+                    this._pStyleDialog = null;
+                    this._fnOpenStyleDialog = null;
+                    if (!fnOpen) {
+                        oDialog.destroy();
+                        return;
+                    }
+
+                    this._oStyleDialog = oDialog;
+                    oView.addDependent(oDialog);
+                    fnOpen(oDialog);
+                }.bind(this), function (oError) {
+                    Log.error("Could not load Style value help", oError && (oError.stack || oError.message), "zfgtrns.controller.View1");
+                    if (this._fnOpenStyleDialog) {
+                        MessageToast.show("Could not open Style value help.");
+                    }
+                    this._fnOpenStyleDialog = null;
+                    this._pStyleDialog = null;
+                }.bind(this));
+            },
+
+            _destroyStyleDialog: function () {
+                this._fnOpenStyleDialog = null;
+                if (this._oStyleDialog) {
+                    this._oStyleDialog.destroy();
+                    this._oStyleDialog = null;
                 }
             },
 
-            
-
-            onStyleVHSearch: function (oEvent) {
+            onZiFgStyleTableSelectDialogSearch: function (oEvent) {
                 var sValue = oEvent.getParameter("value");
                 var oLocalModel = this.getView().getModel("local");
                 var sFromPlant = oLocalModel ? oLocalModel.getProperty("/header/fromPlant") : "";
+                var oBinding = oEvent.getSource().getBinding("items");
+                if (oBinding) {
+                    oBinding.filter(this._getStyleFilters(sFromPlant, sValue));
+                }
+            },
 
+            _getStyleFilters: function (sFromPlant, sValue) {
                 var aFilters = [];
 
                 if (sFromPlant) {
@@ -406,13 +478,10 @@
                     aFilters.push(oSearchFilter);
                 }
 
-                var oBinding = oEvent.getSource().getBinding("items");
-                if (oBinding) {
-                    oBinding.filter(aFilters.length > 0 ? new Filter({ filters: aFilters, and: true }) : []);
-                }
+                return aFilters.length ? new Filter({ filters: aFilters, and: true }) : [];
             },
 
-            onStyleVHConfirm: function (oEvent) {
+            onZiFgStyleTableSelectDialogConfirm: function (oEvent) {
                 var oSelectedItem = oEvent.getParameter("selectedItem");
                 if (!oSelectedItem) {
                     return;
@@ -420,22 +489,25 @@
 
                 var oContext = oSelectedItem.getBindingContext();
                 var oSelectedData = oContext ? oContext.getObject() : null;
-
-                var sStyle = oSelectedData ? oSelectedData.StyleName : "";
-                var sBrand = oSelectedData ? oSelectedData.BrandName : "";
-                var sCategory = oSelectedData ? oSelectedData.ProductType : "";
-                var sSeason = oSelectedData ? oSelectedData.Season : "";
-                var sSubCat = oSelectedData ? oSelectedData.subcat : "";
-
-                if (!sStyle && oSelectedItem.getCells) {
+                if ((!oSelectedData || !oSelectedData.StyleName) && oSelectedItem.getCells) {
                     var aCells = oSelectedItem.getCells();
-                    sStyle = aCells[0] ? aCells[0].getText() : "";
-                    sBrand = aCells[2] ? aCells[2].getText() : "";
-                    sCategory = aCells[3] ? aCells[3].getText() : "";
-                    sSeason = aCells[4] ? aCells[4].getText() : "";
-                    sSubCat = aCells[5] ? aCells[5].getText() : "";
+                    oSelectedData = {
+                        StyleName: aCells[0] ? aCells[0].getText() : "",
+                        BrandName: aCells[2] ? aCells[2].getText() : "",
+                        ProductType: aCells[3] ? aCells[3].getText() : "",
+                        Season: aCells[4] ? aCells[4].getText() : "",
+                        subcat: aCells[5] ? aCells[5].getText() : ""
+                    };
                 }
+                this._applySelectedStyle(oSelectedData || {});
+            },
 
+            _applySelectedStyle: function (oStyle) {
+                var sStyle = oStyle.StyleName || "";
+                var sBrand = oStyle.BrandName || "";
+                var sCategory = oStyle.ProductType || "";
+                var sSeason = oStyle.Season || "";
+                var sSubCat = oStyle.subcat || "";
                 var oLocalModel = this.getView().getModel("local");
                 if (oLocalModel) {
                     oLocalModel.setProperty("/selection/style", sStyle);
@@ -445,11 +517,11 @@
                     oLocalModel.setProperty("/selection/subCategory", sSubCat);
                 }
 
-                if (this.byId("inputStyle")) { this.byId("inputStyle").setValue(sStyle); }
-                if (this.byId("inputBrand")) { this.byId("inputBrand").setValue(sBrand); }
-                if (this.byId("inputCategory")) { this.byId("inputCategory").setValue(sCategory); }
-                if (this.byId("inputSeason")) { this.byId("inputSeason").setValue(sSeason); }
-                if (this.byId("inputSubCategory")) { this.byId("inputSubCategory").setValue(sSubCat); }
+                if (this.byId("idStyleInput")) { this.byId("idStyleInput").setValue(sStyle); }
+                if (this.byId("idBrandInput")) { this.byId("idBrandInput").setValue(sBrand); }
+                if (this.byId("idCategoryInput")) { this.byId("idCategoryInput").setValue(sCategory); }
+                if (this.byId("idSeasonInput")) { this.byId("idSeasonInput").setValue(sSeason); }
+                if (this.byId("idSubCategoryInput")) { this.byId("idSubCategoryInput").setValue(sSubCat); }
             },
 
          
@@ -462,7 +534,7 @@
             // BATCH VALUE HELP LOGIC
             // ==========================================
 
-            onBatchValueHelp: function () {
+            onManualBatchInputValueHelpRequest: function () {
                 var oView = this.getView();
                 var oLocalModel = oView.getModel("local");
 
@@ -714,7 +786,7 @@
                 });
             },
 
-            onBatchScanned: function (oEvent) {
+            onScannedBatchInputSubmit: function (oEvent) {
                 var sScannedValue = oEvent.getParameter("value") || oEvent.getSource().getValue();
                 if (!sScannedValue) {
                     return;
@@ -726,7 +798,7 @@
                 oLocalModel.setProperty("/selection/scannedBatch", "");
             },
 
-            onGetData: function () {
+            onManualBatchInputSubmit: function () {
                 var oLocalModel = this.getView().getModel("local");
                 var sMode = oLocalModel.getProperty("/header/selectionMode");
                 var sBatch = sMode === "MANUAL"
@@ -747,8 +819,8 @@
                 }
             },
 
-            onDeleteFromItem: function () {
-        var oTable = this.byId("tableFromLocation");
+            onDeleteButtonPress: function () {
+        var oTable = this.byId("idFromLocationItemsTable");
         var aSelectedItems = oTable.getSelectedItems();
 
         if (aSelectedItems.length === 0) {
@@ -844,7 +916,6 @@
                             color: oRec.Color || "",
                             size: oRec.SizeSet || "",
                             lotNo: oRec.LotNum || "",   
-                            lotNo: "",
                             batch: oRec.Batch,
                             quantity: nQty,
                             uom: oRec.MaterialBaseUnit,
@@ -878,7 +949,7 @@
     oLocalModel.setProperty("/fromItemCount", aItems.length);
 },
 
-            onFromQtyChange: function (oEvent) {
+            onQuantityInputChange: function (oEvent) {
                 var oLocalModel = this.getView().getModel("local");
                 var aItems = oLocalModel.getProperty("/fromLocationItems") || [];
 
@@ -894,10 +965,14 @@
                 oLocalModel.setProperty("/fromTotalQty", iTotal);
             },
 
-           onSubmit: function () {
+           onSubmitTransferButtonPress: function () {
     var oView = this.getView();
     var oLocalModel = oView.getModel("local");
     var oODataModel = oView.getModel();
+
+    if (oLocalModel.getProperty("/postingSuccessful") || oView.getBusy()) {
+        return;
+    }
 
     var oHeader = oLocalModel.getProperty("/header") || {};
     var oSelection = oLocalModel.getProperty("/selection") || {};
@@ -984,32 +1059,14 @@
         "_Item": aItemsPayload
     };
 
-    // Reset screen after a successful posting
-    var fnResetScreen = function () {
-        oLocalModel.setProperty("/fromLocationItems", []);
-        oLocalModel.setProperty("/fromTotalQty", 0);
-        oLocalModel.setProperty("/header/fromPlant", "");
-        oLocalModel.setProperty("/header/toPlant", "");
-        oLocalModel.setProperty("/header/fromSloc", "");
-        oLocalModel.setProperty("/header/toSloc", "");
-        oLocalModel.setProperty("/selection/manualBatch", "");
-        oLocalModel.setProperty("/selection/scannedBatch", "");
-
-        var oFromPlantInput = oView.byId("inputFromPlant");
-        if (oFromPlantInput) {
-            oFromPlantInput.focus();
-        }
-    };
-
     // Decide success / error ONLY on MatDoc
     var fnShowResult = function (sMatDoc, sMess) {
         var sDoc = (sMatDoc || "").trim();
         var bHasMatDoc = sDoc !== "" && !/^0+$/.test(sDoc);
 
         if (bHasMatDoc) {
-            MessageBox.success("Transfer Posting " + sDoc + " created successfully!", {
-                onClose: fnResetScreen
-            });
+            oLocalModel.setProperty("/postingSuccessful", true);
+            MessageBox.success("Transfer Posting " + sDoc + " created successfully!");
         } else {
             // Keep the screen data so the user can correct and resubmit
             MessageBox.error(
@@ -1047,61 +1104,18 @@
         MessageBox.error(sErrorMsg);
     });
 },
-    onNew: function () {
-        var oView = this.getView();
-        var oLocalModel = oView.getModel("local");
+            onClearButtonPress: function () {
+                this._resetTransferForm();
+            },
 
-        MessageBox.confirm("Are you sure you want to start a new transaction? All unsaved data will be cleared.", {
-            title: "Reset Screen",
-            actions: [MessageBox.Action.YES, MessageBox.Action.NO],
-            onClose: function (oAction) {
-                if (oAction === MessageBox.Action.YES) {
+            onNewButtonPress: function () {
+                this._resetTransferForm();
+            },
 
-                    // 1. Preserve current Posting Date and Selection Mode
-                    var sCurrentPostingDate = oLocalModel.getProperty("/header/postingDate");
-                    var sCurrentSelectionMode = oLocalModel.getProperty("/header/selectionMode") || "MANUAL";
-
-                    // 2. Reset Header Data
-                    oLocalModel.setProperty("/header", {
-                        fromPlant: "",
-                        toPlant: "",
-                        fromSloc: "",
-                        toSloc: "",
-                        postingDate: sCurrentPostingDate,
-                        selectionMode: sCurrentSelectionMode,
-                        remark: ""
-                    });
-
-                    // 3. Reset Selection Fields (Including Brand, Cat Season, Sub Cat)
-                    oLocalModel.setProperty("/selection", {
-                        brand: "",
-                        catSeason: "",
-                        subCat: "",
-                        style: "",
-                        manualBatch: "",
-                        scannedBatch: ""
-                    });
-
-                    // 4. Clear Dependent Dropdown Item Lists (if dynamically bound)
-                    oLocalModel.setProperty("/catSeasonList", []);
-                    oLocalModel.setProperty("/subCatList", []);
-
-                    // 5. Clear Table Items & Quantities
-                    oLocalModel.setProperty("/fromLocationItems", []);
-                    oLocalModel.setProperty("/fromTotalQty", 0);
-
-                    // 6. Clear Validation Messages & Reset Focus
-                    sap.ui.getCore().getMessageManager().removeAllMessages();
-
-                    var oFromPlantInput = oView.byId("inputFromPlant");
-                    if (oFromPlantInput) {
-                        oFromPlantInput.focus();
-                    }
-
-                    MessageToast.show("Screen refreshed successfully.");
-                }
+            _resetTransferForm: function () {
+                this.getView().getModel("local").setData(this._createTransferFormData());
+                sap.ui.getCore().getMessageManager().removeAllMessages();
+                this.byId("idFromPlantInput").focus();
             }
-        });
-    }
         });
     });

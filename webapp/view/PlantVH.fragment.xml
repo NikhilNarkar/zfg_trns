@@ -1,11 +1,9 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
-    <SelectDialog id="_IDGenSelectDialog"
+    <SelectDialog id="idZiPlantvhSelectDialog"
         title="Select Plant"
         items="{/ZI_PLANTVH}"
-        confirm=".onPlantVHConfirm"
-        
-        search=".onPlantVHSearch"
-        >
-        <StandardListItem id="_IDGenStandardListItem1" title="{Plant}" description="{PlantName}" />
+        confirm=".onZiPlantvhSelectDialogConfirm"
+        search=".onZiPlantvhSelectDialogSearch">
+        <StandardListItem id="idPlantStandardListItem" title="{Plant}" description="{PlantName}" />
     </SelectDialog>
 </core:FragmentDefinition>

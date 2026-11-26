@@ -3,10 +3,9 @@
     xmlns:core="sap.ui.core">
     <TableSelectDialog id="_IDGenTableSelectDialog"
         title="Select Style"
-        items="{/ZI_FG_STYLE}"
+        items="{ path: '/ZI_FG_STYLE', templateShareable: false }"
         search=".onStyleVHSearch"
         confirm=".onStyleVHConfirm"
-        cancel=".onStyleVHCancel"
         contentWidth="700px"
         contentHeight="500px"
         rememberSelections="true">

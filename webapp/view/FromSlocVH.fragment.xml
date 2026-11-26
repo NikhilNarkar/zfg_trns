@@ -1,7 +1,7 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
     <TableSelectDialog id="fromSlocTableSelectDialog"
         title="Select From Storage Location"
-        items="{/ZI_STORAGELOCATION_VH}"
+        items="{ path: '/ZI_STORAGELOCATION_VH', suspended: true, templateShareable: false }"
         confirm=".onFromSlocVHConfirm" 
         contentWidth="600px"         
         contentHeight="400px"

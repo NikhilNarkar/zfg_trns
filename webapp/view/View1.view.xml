@@ -6,50 +6,46 @@
     xmlns="sap.m">
 
     <Page
-        id="page"
+        id="idTransferPage"
         title="FG Stock Transfer"
         class="sapUiSizeCompact"
-        enableScrolling="true"
-        showHeader="true"
         busy="{local>/busy}"
         busyIndicatorDelay="0">
 
         <content>
             <VBox
-                id="mainVBox"
+                id="idTransferVBox"
                 width="100%"
                 fitContainer="true"
                 class="sapUiResponsiveContentPadding">
 
                 <MessageStrip
-                    id="msGuidance"
+                    id="idFillInTheTransferDetailsChooseABatchThenSelectTheStockItemsToMoveMessageStrip"
                     text="Fill in the transfer details, choose a batch, then select the stock items to move."
-                    type="Information"
                     showIcon="true"
                     showCloseButton="true"
                     class="sapUiSmallMarginBottom" />
 
                 <Panel
-                    id="selectionPanel"
+                    id="idTransferDetailsPanel"
                     expandable="true"
                     expanded="true"
-                    width="100%"
                     backgroundDesign="Solid"
                     class="sapUiNoContentPadding">
 
                     <headerToolbar>
-                        <OverflowToolbar id="_IDGenOverflowToolbar">
+                        <OverflowToolbar id="idTransferDetailsOverflowToolbar">
                             <core:Icon
-                                id="_IDGenIcon"
+                                id="idTransferDetailsIcon"
                                 src="sap-icon://shipping-status"
                                 size="1.2rem" />
                             <Title
-                                id="_IDGenTitle"
+                                id="idTransferDetailsTitle"
                                 text="Transfer Details"
                                 level="H2" />
-                            <ToolbarSpacer id="_IDGenToolbarSpacer" />
+                            <ToolbarSpacer id="idTransferDetailsToolbarSpacer" />
                             <ObjectStatus
-                                id="_IDGenObjectStatus"
+                                id="idRequiredFieldsMarkedWithObjectStatus"
                                 text="Required fields marked with *"
                                 state="Information" />
                         </OverflowToolbar>
@@ -57,65 +53,59 @@
 
                     <content>
                         <f:SimpleForm
-                            id="formTransferDetails"
+                            id="idTransferDetailsSimpleForm"
                             editable="true"
-                            layout="ResponsiveGridLayout"
                             columnsXL="4"
                             columnsL="4"
                             columnsM="2"
                             labelSpanXL="4"
-                            labelSpanL="4"
                             labelSpanM="4"
-                            labelSpanS="12"
                             adjustLabelSpan="false"
                             emptySpanXL="0"
-                            emptySpanL="0"
-                            emptySpanM="0"
-                            emptySpanS="0"
-                            singleContainerFullWidth="false">
+                            singleContainerFullSize="false">
                             <f:content>
 
                                 <!-- Column 1: Plant & Sloc -->
-                                <core:Title id="titleCol1" text="" />
-                                <Label id="lblPostingDate" text="Posting Date" required="true" />
+                                <core:Title id="idFirstGroupTitle" text="" />
+                                <Label id="idPostingDateLabel" text="Posting Date" required="true" />
                               <DatePicker
-    id="dpPostingDate"
+    id="idPostingDateDatePicker"
     value="{local>/header/postingDate}"
     valueFormat="dd.MM.yyyy"
     displayFormat="dd.MM.yyyy"
     width="100%" />
 
-                                <Label id="lblFromPlant" text="From Plant" required="true" />
+                                <Label id="idFromPlantLabel" text="From Plant" required="true" />
                                 <Input
-    id="inputFromPlant"
+    id="idFromPlantInput"
     value="{local>/header/fromPlant}"
     placeholder="Enter Plant"
     showValueHelp="true"
-    valueHelpRequest=".onFromPlantValueHelp"
+    valueHelpRequest=".onFromPlantInputValueHelpRequest"
     showSuggestion="true"
-    suggest=".onPlantSuggest"
+    suggest=".onFromPlantInputSuggest"
     suggestionItems="{/ZI_PLANTVH}">
     <suggestionItems>
-    <core:ListItem id="_IDGenListItem" key="{Plant}" text="{Plant}" additionalText="{PlantName}" />
+    <core:ListItem id="idPlantFromListItem" key="{Plant}" text="{Plant}" additionalText="{PlantName}" />
 </suggestionItems>
 </Input>
 
-                                <Label id="lblToPlant" text="To Plant" required="true" />
+                                <Label id="idToPlantLabel" text="To Plant" required="true" />
                                 <Input
-    id="inputToPlant"
+    id="idToPlantInput"
     value="{local>/header/toPlant}"
     placeholder="Enter Plant"
     showValueHelp="true"
-    valueHelpRequest=".onToPlantValueHelp"
+    valueHelpRequest=".onToPlantInputValueHelpRequest"
     showSuggestion="true"
-    suggest=".onPlantSuggest"
+    suggest=".onToPlantInputSuggest"
     suggestionItems="{/ZI_PLANTVH}">
     <suggestionItems>
-    <core:ListItem id="_IDGenListItems" key="{Plant}" text="{Plant}" additionalText="{PlantName}" />
+    <core:ListItem id="idPlantToListItem" key="{Plant}" text="{Plant}" additionalText="{PlantName}" />
 </suggestionItems>
 </Input>
 
-                                <Label id="lblFromSloc" text="From Location" required="true" />
+                                <Label id="idFromLocationLabel" text="From Location" required="true" />
                                 <!-- <Input
                                     id="inputFromSloc"
                                     value="{local>/header/fromSloc}"
@@ -125,22 +115,23 @@
 
                                     <!-- From Location Input -->
 <Input
-    id="inputFromSloc"
+    id="idFromSlocInput"
     value="{local>/header/fromSloc}"
     placeholder="Enter Location"
     showValueHelp="true"
-    valueHelpRequest=".onFromSlocValueHelp"
-    showSuggestion="true"
-    suggest=".onLocationSuggest"
-    suggestionItems="{/ZI_STORAGELOCATION_VH}"> <!-- Replace with your Storage Location entity set -->
+    valueHelpRequest=".onFromSlocInputValueHelpRequest"
+    showSuggestion="{= !!${local>/header/fromPlant} }"
+    filterSuggests="false"
+    suggest=".onFromSlocInputSuggest"
+    suggestionItems="{ path: '/ZI_STORAGELOCATION_VH', suspended: true }">
     <suggestionItems>
-        <core:ListItem id="_IDGenListItem1" key="{StorageLocation}" text="{StorageLocation}" additionalText="{StorageLocationName}" />
+        <core:ListItem id="idStorageLocationFromListItem" key="{StorageLocation}" text="{StorageLocation}" additionalText="{StorageLocationName}" />
     </suggestionItems>
 </Input>
 
                                 <!-- Column 2: Material -->
-                                <core:Title id="titleCol2" text="" />
-                                <Label id="lblToSloc" text="To Location" required="true" />
+                                <core:Title id="idSecondGroupTitle" text="" />
+                                <Label id="idToLocationLabel" text="To Location" required="true" />
                                 <!-- <Input
                                     id="inputToSloc"
                                     value="{local>/header/toSloc}"
@@ -149,20 +140,21 @@
                                     placeholder="Select destination storage location..." /> -->
 
                                     <Input
-    id="inputToSloc"
+    id="idToSlocInput"
     value="{local>/header/toSloc}"
     placeholder="Enter Location"
     showValueHelp="true"
-    valueHelpRequest=".onToSlocValueHelp"
-    showSuggestion="true"
-    suggest=".onLocationSuggest"
-    suggestionItems="{/ZI_STORAGELOCATION_VH}"> <!-- Replace with your Storage Location entity set -->
+    valueHelpRequest=".onToSlocInputValueHelpRequest"
+    showSuggestion="{= !!${local>/header/toPlant} }"
+    filterSuggests="false"
+    suggest=".onToSlocInputSuggest"
+    suggestionItems="{ path: '/ZI_STORAGELOCATION_VH', suspended: true }">
     <suggestionItems>
-        <core:ListItem id="_IDGenListItem2" key="{StorageLocation}" text="{StorageLocation}" additionalText="{StorageLocationName}" />
+        <core:ListItem id="idStorageLocationToListItem" key="{StorageLocation}" text="{StorageLocation}" additionalText="{StorageLocationName}" />
     </suggestionItems>
 </Input>
 
-                                <Label id="lblStyle" text="Style" required="true" />
+                                <Label id="idStyleLabel" text="Style" required="true" />
                                 <!-- <Input
                                     id="inputStyle"
                                     value="{local>/selection/style}"
@@ -172,99 +164,101 @@
 
                                     <!-- Style Input -->
 <Input
-    id="inputStyle"
+    id="idStyleInput"
     value="{local>/selection/style}"
     placeholder="Enter Style"
     showValueHelp="true"
-    valueHelpRequest=".onStyleValueHelp"
-    showSuggestion="true"
-    
-    suggest=".onStyleSuggest"
-    suggestionItemSelected=".onStyleSuggestionItemSelected"
-    suggestionItems="{/ZI_FG_STYLE}">
+    valueHelpRequest=".onStyleInputValueHelpRequest"
+    showSuggestion="{= !!${local>/header/fromPlant} }"
+    filterSuggests="false"
+    suggest=".onStyleInputSuggest"
+    suggestionItemSelected=".onStyleInputSuggestionItemSelected"
+    suggestionItems="{
+        path: '/ZI_FG_STYLE',
+        suspended: true,
+        parameters: { $select: 'StyleName,StyleDesc,BrandName,ProductType,Season,subcat' }
+    }">
     <suggestionItems>
-        <core:ListItem id="_IDGenListItem3" 
+        <core:ListItem id="idStyleNameListItem"
             key="{StyleName}" 
             text="{StyleName}" 
             additionalText="{StyleDesc}" />
     </suggestionItems>
 </Input>
 
-                                <Label id="lblBrand" text="Brand" />
+                                <Label id="idBrandLabel" text="Brand" />
                                 <Input
-                                    id="inputBrand"
+                                    id="idBrandInput"
                                     value="{local>/selection/brand}"
                                     editable="false" />
 
-                                <Label id="lblCategory" text="Category" />
+                                <Label id="idCategoryLabel" text="Category" />
                                 <Input
-                                    id="inputCategory"
+                                    id="idCategoryInput"
                                     value="{local>/selection/category}"
                                     editable="false" />
 
                                 <!-- Column 3: Categories & Batch Mode -->
-                                <core:Title id="titleCol3" text="" />
-                                <Label id="lblSeason" text="Season" />
+                                <core:Title id="idThirdGroupTitle" text="" />
+                                <Label id="idSeasonLabel" text="Season" />
                                 <Input
-                                    id="inputSeason"
+                                    id="idSeasonInput"
                                     value="{local>/selection/season}"
                                     editable="false" />
 
-                                <Label id="lblSubCategory" text="Sub Category" />
+                                <Label id="idSubCategoryLabel" text="Sub Category" />
                                 <Input
-                                    id="inputSubCategory"
+                                    id="idSubCategoryInput"
                                     value="{local>/selection/subCategory}"
                                     editable="false" />
 
-                                <Label id="lblSelectionMode" text="Selection Mode" />
+                                <Label id="idSelectionModeLabel" text="Selection Mode" />
                                 <SegmentedButton
-                                    id="sbSelectionMode"
+                                    id="idSelectionModeSegmentedButton"
                                     selectedKey="{local>/header/selectionMode}"
-                                    selectionChange=".onSelectionModeChange"
+                                    selectionChange=".onSegmentedButtonSelectionChange"
                                     width="100%">
                                     <items>
-                                        <SegmentedButtonItem id="btnManual" key="MANUAL" text="Manual" icon="sap-icon://edit" />
-                                        <SegmentedButtonItem id="btnScan" key="SCANNING" text="Scanning" icon="sap-icon://bar-code" />
+                                        <SegmentedButtonItem id="idManualSegmentedButtonItem" key="MANUAL" text="Manual" icon="sap-icon://edit" />
+                                        <SegmentedButtonItem id="idScanningSegmentedButtonItem" key="SCANNING" text="Scanning" icon="sap-icon://bar-code" />
                                     </items>
                                 </SegmentedButton>
 
                                 <Label
-                                    id="lblManualBatch"
+                                    id="idBatchSelectionLabel"
                                     text="Batch Selection"
                                     required="true"
                                     visible="{= ${local>/header/selectionMode} === 'MANUAL' }" />
                                 <Input
-                                    id="inpManualBatch"
+                                    id="idManualBatchInput"
                                     value="{local>/selection/manualBatch}"
                                     placeholder="Select or enter Batch No..."
                                     showValueHelp="true"
-                                    valueHelpRequest=".onBatchValueHelp"
-                                    submit=".onGetData"
+                                    valueHelpRequest=".onManualBatchInputValueHelpRequest"
+                                    submit=".onManualBatchInputSubmit"
                                     visible="{= ${local>/header/selectionMode} === 'MANUAL' }"
                                     width="100%" />
 
                                 <Label
-                                    id="lblScannedBatch"
+                                    id="idScanBatchLabel"
                                     text="Scan Batch"
                                     required="true"
                                     visible="{= ${local>/header/selectionMode} === 'SCANNING' }" />
                                 <Input
-                                    id="inpScannedBatch"
+                                    id="idScannedBatchInput"
                                     value="{local>/selection/scannedBatch}"
                                     placeholder="Scan Barcode..."
-                                    icon="sap-icon://bar-code"
-                                    submit=".onBatchScanned"
+                                    submit=".onScannedBatchInputSubmit"
                                     visible="{= ${local>/header/selectionMode} === 'SCANNING' }"
                                     width="100%" />
 
                                 <!-- Column 4: Remarks -->
-                                <core:Title id="titleCol4" text="" />
-                                <Label id="lblRemarks" text="Remarks" />
+                                <core:Title id="idFourthGroupTitle" text="" />
+                                <Label id="idRemarksLabel" text="Remarks" />
                                 <TextArea
-                                    id="inputRemarks"
+                                    id="idRemarksTextArea"
                                     value="{local>/header/remarks}"
                                     placeholder="Enter remarks..."
-                                    rows="2"
                                     growing="true"
                                     width="100%" />
 
@@ -274,26 +268,25 @@
                 </Panel>
 
                 <Panel
-                    id="panelFromDetails"
+                    id="idFromLocationPanel"
                     expandable="true"
                     expanded="true"
-                    width="100%"
                     backgroundDesign="Solid"
                     class="sapUiSmallMarginTop sapUiNoContentPadding">
 
                     <headerToolbar>
-                        <OverflowToolbar id="_IDGenOverflowToolbar1">
+                        <OverflowToolbar id="idFromLocationOverflowToolbar">
                             <core:Icon
-                                id="_IDGenIcon1"
+                                id="idFromLocationIcon"
                                 src="sap-icon://inventory"
                                 size="1.2rem" />
                             <Title
-                                id="titleFromLocation"
+                                id="idFromLocationTitle"
                                 text="From Location"
                                 level="H2" />
-                            <ToolbarSpacer id="_IDGenToolbarSpacer1" />
+                            <ToolbarSpacer id="idFromLocationToolbarSpacer" />
                             <ObjectStatus
-                                id="_IDGenObjectStatus1"
+                                id="idAvailableStockObjectStatus"
                                 text="Available Stock"
                                 state="Information" />
                         </OverflowToolbar>
@@ -301,103 +294,100 @@
 
                     <content>
                         <Table
-                            id="tableFromLocation"
+                            id="idFromLocationItemsTable"
                             items="{local>/fromLocationItems}"
                             noDataText="No stock items found. Adjust your selection above and try again."
                             sticky="ColumnHeaders,HeaderToolbar"
                             growing="true"
-                            growingThreshold="20"
                             mode="MultiSelect"
                             fixedLayout="false"
-                            showSeparators="All"
-                            width="100%"
                             autoPopinMode="true">
 
                             <headerToolbar>
-                                <OverflowToolbar id="_IDGenOverflowToolbar2">
-                                    <Title id="_IDGenTitle1" text="Stock Items ({local>/fromItemCount})" level="H3" />
-                                    <ToolbarSpacer id="_IDGenToolbarSpacer2" />
+                                <OverflowToolbar id="idStockItemsOverflowToolbar">
+                                    <Title id="idStockItemsLocalfromItemCountTitle" text="Stock Items ({local>/fromItemCount})" level="H3" />
+                                    <ToolbarSpacer id="idStockItemsToolbarSpacer" />
                                     <ObjectNumber
-                                        id="_IDGenObjectNumber"
+                                        id="idFromTotalQtyToolbarObjectNumber"
                                         number="{local>/fromTotalQty}"
                                         unit="Total"
                                         state="Information" />
-                                    <ToolbarSeparator id="_IDGenToolbarSeparator" />
+                                    <ToolbarSeparator id="idStockItemsToolbarSeparator" />
                                     <Button
-                                        id="btnExport"
+                                        id="idExportButton"
                                         text="Export"
                                         icon="sap-icon://excel-attachment"
                                         type="Transparent"
-                                        press=".onExportExcel"
+                                        press=".onExportButtonPress"
                                         tooltip="Export stock items" />
                                     <Button
-                                        id="btnDelete"
+                                        id="idDeleteButton"
                                         text="Delete"
                                         icon="sap-icon://delete"
                                         type="Reject"
-                                        press=".onDeleteFromItem"
+                                        press=".onDeleteButtonPress"
                                         tooltip="Delete selected items" />
                                 </OverflowToolbar>
                             </headerToolbar>
 
                             <columns>
-                                <Column id="colSalesOrder" width="7rem" importance="Low">
-                                    <Text id="_IDGenText1" text="Sales Order" />
+                                <Column id="idSalesOrderColumn" width="7rem" importance="Low">
+                                    <Text id="idSalesOrderText" text="Sales Order" />
                                 </Column>
-                                <Column id="colSOLineItem" width="6rem" importance="Low">
-                                    <Text id="_IDGenText2" text="SO Line Item" />
+                                <Column id="idSOLineItemColumn" width="6rem" importance="Low">
+                                    <Text id="idSOLineItemText" text="SO Line Item" />
                                 </Column>
-                                <Column id="colStyle" width="7rem" importance="High">
-                                    <Text id="_IDGenText3" text="Style" />
+                                <Column id="idStyleColumn" width="7rem" importance="High">
+                                    <Text id="idStyleText" text="Style" />
                                 </Column>
-                                <Column id="colMaterial" width="9rem" importance="High">
-                                    <Text id="_IDGenText4" text="Material" />
+                                <Column id="idMaterialColumn" width="9rem" importance="High">
+                                    <Text id="idMaterialText" text="Material" />
                                 </Column>
-                                <Column id="colColor" width="6rem" importance="Medium">
-                                    <Text id="_IDGenText5" text="Color" />
+                                <Column id="idColorColumn" width="6rem" importance="Medium">
+                                    <Text id="idColorText" text="Color" />
                                 </Column>
-                                <Column id="colSize" width="5rem" importance="Medium">
-                                    <Text id="_IDGenText6" text="Size" />
+                                <Column id="idSizeColumn" width="5rem" importance="Medium">
+                                    <Text id="idSizeText" text="Size" />
                                 </Column>
-                                <Column id="colLotNo" width="6rem" importance="Low">
-                                    <Text id="_IDGenText7" text="Lot No" />
+                                <Column id="idLotNoColumn" width="6rem" importance="Low">
+                                    <Text id="idLotNoText" text="Lot No" />
                                 </Column>
-                                <Column id="colBatch" width="9rem" importance="High">
-                                    <Text id="_IDGenText8" text="From Batch" />
+                                <Column id="idFromBatchColumn" width="9rem" importance="High">
+                                    <Text id="idFromBatchText" text="From Batch" />
                                 </Column>
-                                <Column id="colBatch2" width="9rem" importance="High">
-                                    <Text id="_IDGenText8b" text="To Batch" />
+                                <Column id="idToBatchColumn" width="9rem" importance="High">
+                                    <Text id="idToBatchText" text="To Batch" />
                                 </Column>
-                                <Column id="colQty" width="7rem" hAlign="End" importance="High">
-                                    <Text id="_IDGenText9" text="Quantity" />
+                                <Column id="idQuantityColumn" width="7rem" hAlign="End" importance="High">
+                                    <Text id="idQuantityText" text="Quantity" />
                                     <footer>
-                                        <ObjectNumber id="numTotalFromQty" number="{local>/fromTotalQty}" state="Success" />
+                                        <ObjectNumber id="idFromTotalQtyFooterObjectNumber" number="{local>/fromTotalQty}" state="Success" />
                                     </footer>
                                 </Column>
-                                <Column id="colUom" width="5rem" importance="High">
-                                    <Text id="_IDGenText10" text="UoM" />
+                                <Column id="idUomColumn" width="5rem" importance="High">
+                                    <Text id="idUoMText" text="UoM" />
                                 </Column>
                             </columns>
 
                             <items>
-                                <ColumnListItem id="cliFromLocation" vAlign="Middle">
+                                <ColumnListItem id="idFromLocationColumnListItem" vAlign="Middle">
                                     <cells>
-                                        <Text id="_IDGenText11" text="{local>salesOrder}" />
-                                        <Text id="_IDGenText12" text="{local>soLineItem}" />
-                                        <Text id="_IDGenText13" text="{local>style}" wrapping="false" />
-                                        <Text id="_IDGenText14" text="{local>material}" wrapping="false" />
-                                        <Text id="_IDGenText15" text="{local>color}" />
-                                        <Text id="_IDGenText16" text="{local>size}" />
-                                        <Text id="_IDGenText17" text="{local>lotNo}" />
-                                        <ObjectIdentifier id="_IDGenObjectIdentifier" title="{local>batch}" />
-                                        <ObjectIdentifier id="_IDGenObjectIdentifierS" title="{local>batch}" />
+                                        <Text id="idSalesOrderCellText" text="{local>salesOrder}" />
+                                        <Text id="idSoLineItemCellText" text="{local>soLineItem}" />
+                                        <Text id="idStyleCellText" text="{local>style}" wrapping="false" />
+                                        <Text id="idMaterialCellText" text="{local>material}" wrapping="false" />
+                                        <Text id="idColorCellText" text="{local>color}" />
+                                        <Text id="idSizeCellText" text="{local>size}" />
+                                        <Text id="idLotNoCellText" text="{local>lotNo}" />
+                                        <ObjectIdentifier id="idFromBatchObjectIdentifier" title="{local>batch}" />
+                                        <ObjectIdentifier id="idToBatchObjectIdentifier" title="{local>batch}" />
                                         <Input
-                                            id="_IDGenInput"
+                                            id="idQuantityInput"
                                             value="{local>quantity}"
                                             type="Number"
                                             textAlign="End"
-                                            change=".onFromQtyChange" />
-                                        <Text id="_IDGenText18" text="{local>uom}" />
+                                            change=".onQuantityInputChange" />
+                                        <Text id="idUomCellText" text="{local>uom}" />
                                     </cells>
                                 </ColumnListItem>
                             </items>
@@ -410,23 +400,33 @@
         </content>
 
         <footer>
-            <OverflowToolbar id="_IDGenOverflowToolbar5">
-                <ObjectStatus id="_IDGenObjectStatus3" text="Ready for Transfer" state="Information" />
-                <ToolbarSpacer id="_IDGenToolbarSpacer6" />
+            <OverflowToolbar id="idFooterOverflowToolbar">
+                <ObjectStatus id="idReadyForTransferObjectStatus"
+                    text="{= ${local>/postingSuccessful} ? 'Transfer Posted' : 'Ready for Transfer' }"
+                    state="{= ${local>/postingSuccessful} ? 'Success' : 'Information' }" />
+                <ToolbarSpacer id="idFooterToolbarSpacer" />
                 <Button
-                    id="btnNew"
-                    text="Refresh"
-                    icon="sap-icon://refresh"
+                    id="idClearButton"
+                    text="Clear"
                     type="Transparent"
-                    press=".onNew"
-                    tooltip="Start a new transfer" />
+                    visible="{= !${local>/postingSuccessful} }"
+                    press=".onClearButtonPress"
+                    tooltip="Clear the transfer form" />
                 <Button
-                    id="btnSubmit"
+                    id="idSubmitTransferButton"
                     text="Submit Transfer"
                     type="Emphasized"
                     icon="sap-icon://accept"
-                    press=".onSubmit"
+                    visible="{= !${local>/postingSuccessful} }"
+                    press=".onSubmitTransferButtonPress"
                     tooltip="Submit stock transfer" />
+                <Button
+                    id="idNewButton"
+                    text="New"
+                    type="Emphasized"
+                    visible="{local>/postingSuccessful}"
+                    press=".onNewButtonPress"
+                    tooltip="Start a new transfer" />
             </OverflowToolbar>
         </footer>
 
