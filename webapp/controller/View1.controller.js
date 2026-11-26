@@ -1066,14 +1066,20 @@
 
         if (bHasMatDoc) {
             oLocalModel.setProperty("/postingSuccessful", true);
-            MessageBox.success("Transfer Posting " + sDoc + " created successfully!");
+            MessageBox.success("Transfer Posting " + sDoc + " created successfully!", {
+                onClose: function (sAction) {
+                    if (sAction === MessageBox.Action.OK) {
+                        this._resetTransferForm(true);
+                    }
+                }.bind(this)
+            });
         } else {
             // Keep the screen data so the user can correct and resubmit
             MessageBox.error(
                 (sMess && sMess.trim()) ? sMess : "Material document was not created. Please check the data and try again."
             );
         }
-    };
+    }.bind(this);
 
     oView.setBusy(true);
 
@@ -1112,10 +1118,14 @@
                 this._resetTransferForm();
             },
 
-            _resetTransferForm: function () {
-                this.getView().getModel("local").setData(this._createTransferFormData());
+            _resetTransferForm: function (bPostingSuccessful) {
+                var oData = this._createTransferFormData();
+                oData.postingSuccessful = Boolean(bPostingSuccessful);
+                this.getView().getModel("local").setData(oData);
                 sap.ui.getCore().getMessageManager().removeAllMessages();
-                this.byId("idFromPlantInput").focus();
+                if (!bPostingSuccessful) {
+                    this.byId("idFromPlantInput").focus();
+                }
             }
         });
     });
